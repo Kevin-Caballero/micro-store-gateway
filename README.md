@@ -1,100 +1,196 @@
-docker run -d --name nats-main -p 4222:4222 -p 6222:6222 -p 8222:8222 nats
+# Gateway Service - Micro Store
 
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+🚪 **Gateway Service** es el punto único de entrada para el sistema de microservicios Micro Store. Actúa como API Gateway manejando todas las peticiones HTTP y coordinando la comunicación con los microservicios internos.
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 🎯 Propósito
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+El Gateway Service es responsable de:
 
-## Description
+- **Enrutamiento de peticiones** a los microservicios correspondientes
+- **Autenticación y autorización** (cuando aplique)
+- **Rate limiting** y throttling
+- **Composición de respuestas** de múltiples servicios
+- **Validación de entrada** usando DTOs compartidas
+- **Logging y monitoreo** de todas las peticiones
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🏗️ Arquitectura
 
-## Project setup
-
-```bash
-$ npm install
+```
+Client Request → Gateway → NATS → Microservices
+                   ↓
+              HTTP Response
 ```
 
-## Compile and run the project
+### Módulos Principales
 
-```bash
-# development
-$ npm run start
+- **Products Module**: Maneja endpoints relacionados con productos
+- **Orders Module**: Gestiona endpoints de órdenes
+- **NATS Module**: Configuración del transporte de mensajes
 
-# watch mode
-$ npm run start:dev
+## 📋 API Endpoints
 
-# production mode
-$ npm run start:prod
+### Products
+
+| Método   | Endpoint        | Descripción                | Body               |
+| -------- | --------------- | -------------------------- | ------------------ |
+| `GET`    | `/products`     | Listar todos los productos | -                  |
+| `GET`    | `/products/:id` | Obtener producto por ID    | -                  |
+| `POST`   | `/products`     | Crear nuevo producto       | `CreateProductDto` |
+| `PATCH`  | `/products/:id` | Actualizar producto        | `UpdateProductDto` |
+| `DELETE` | `/products/:id` | Eliminar producto          | -                  |
+
+### Orders
+
+| Método  | Endpoint      | Descripción              | Body             |
+| ------- | ------------- | ------------------------ | ---------------- |
+| `GET`   | `/orders`     | Listar todas las órdenes | -                |
+| `GET`   | `/orders/:id` | Obtener orden por ID     | -                |
+| `POST`  | `/orders`     | Crear nueva orden        | `CreateOrderDto` |
+| `PATCH` | `/orders/:id` | Actualizar orden         | `UpdateOrderDto` |
+
+## 🔧 Configuración
+
+### Variables de Entorno
+
+```env
+PORT=3000
+NATS_SERVERS=nats://nats-server:4222
 ```
 
-## Run tests
+### Dependencias Principales
+
+- **@nestjs/core**: Framework base
+- **@nestjs/microservices**: Cliente NATS
+- **class-validator**: Validación de DTOs
+- **shared**: Librerías compartidas del proyecto
+
+## 🚀 Desarrollo
+
+### Instalación
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Comandos Disponibles
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Desarrollo con hot reload
+npm run start:dev
+
+# Producción
+npm run start:prod
+
+# Build
+npm run build
+
+# Tests
+npm run test
+npm run test:e2e
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Desarrollo Local
 
-## Resources
+Para desarrollo local necesitas:
 
-Check out a few resources that may come in handy when working with NestJS:
+1. **NATS Server** corriendo (puerto 4222)
+2. **Products Service** disponible
+3. **Orders Service** disponible
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+# Opción 1: Solo el gateway (requiere servicios externos)
+npm run start:dev
 
-## Support
+# Opción 2: Usar Docker Compose (desde la raíz del proyecto)
+cd ../..
+npm start
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 🔌 Integración con Microservicios
 
-## Stay in touch
+### Comunicación NATS
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+El Gateway usa patrones de mensajes para comunicarse:
 
-## License
+```typescript
+// Ejemplo: Obtener productos
+@Get()
+async findAll() {
+  return this.client.send('findAllProducts', {});
+}
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+// Ejemplo: Crear orden
+@Post()
+async create(@Body() createOrderDto: CreateOrderDto) {
+  return this.client.send('createOrder', createOrderDto);
+}
+```
+
+### Patrones de Mensajes
+
+| Patrón            | Servicio | Descripción                 |
+| ----------------- | -------- | --------------------------- |
+| `findAllProducts` | Products | Obtener todos los productos |
+| `findOneProduct`  | Products | Obtener un producto         |
+| `createProduct`   | Products | Crear producto              |
+| `updateProduct`   | Products | Actualizar producto         |
+| `removeProduct`   | Products | Eliminar producto           |
+| `findAllOrders`   | Orders   | Obtener todas las órdenes   |
+| `findOneOrder`    | Orders   | Obtener una orden           |
+| `createOrder`     | Orders   | Crear orden                 |
+| `updateOrder`     | Orders   | Actualizar orden            |
+
+## 🛡️ Validación y Errores
+
+### DTOs de Validación
+
+```typescript
+// Ejemplo de validación
+export class CreateProductDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsNumber()
+  @IsPositive()
+  price: number;
+}
+```
+
+### Manejo de Errores
+
+- **400 Bad Request**: Datos de entrada inválidos
+- **404 Not Found**: Recurso no encontrado
+- **500 Internal Server Error**: Error en microservicio
+- **503 Service Unavailable**: Microservicio no disponible
+
+## 📊 Monitoreo
+
+### Health Check
+
+```bash
+GET /health
+```
+
+### Logs
+
+Los logs incluyen:
+
+- Request/Response times
+- Error tracking
+- NATS message patterns
+- Service availability
+
+## 🔗 Enlaces Relacionados
+
+- [Products Service](../products/README.md)
+- [Orders Service](../orders/README.md)
+- [Shared DTOs](../../shared/README.md)
+- [Arquitectura General](../../docs/README.md)
+
+---
+
+**Puerto por defecto**: 3000  
+**Framework**: NestJS + TypeScript  
+**Transporte**: NATS  
+**Autor**: Kevin Caballero
