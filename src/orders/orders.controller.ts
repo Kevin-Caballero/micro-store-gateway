@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { NATS_SERVICE, ORDER_SERVICE } from 'src/config';
+import { NATS_SERVICE } from 'src/config';
 import { OrdersPaginationDto } from './dtos/orders-pagination.dto';
 import { CreateOrderDto } from './dtos';
 
