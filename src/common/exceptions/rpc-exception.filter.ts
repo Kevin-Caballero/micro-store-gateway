@@ -12,7 +12,9 @@ export class RpcExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger('RpcExceptionFilter');
 
   catch(exception: any, host: ArgumentsHost) {
-    this.logger.error(`RAW RPC Exception: ${JSON.stringify(exception)}`);
+    this.logger.error(
+      `RAW RPC Exception: ${JSON.stringify(exception)}    ${exception.status}`,
+    );
     let status =
       typeof exception.status === 'number'
         ? exception.status
